@@ -4,6 +4,8 @@ import com.gblog.blog.services.UserDetailServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -13,12 +15,18 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 
-
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig {
+
+
+    private final UserDetailServiceImpl userDetailsService;
+
     @Autowired
-    UserDetailServiceImpl userDetailsService;
+    @Lazy
+    public SecurityConfig(UserDetailServiceImpl userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -26,18 +34,22 @@ public class SecurityConfig {
 
         //Object AbstractHttpConfigurer;
         return http.authorizeHttpRequests(request -> request
-                        .requestMatchers("**").permitAll().anyRequest().permitAll())
+                        .requestMatchers("/**","/user/**").permitAll().anyRequest().permitAll())
                 .httpBasic(Customizer.withDefaults())
-                .csrf(AbstractHttpConfigurer::disable).build();
+                .csrf(AbstractHttpConfigurer::disable)
+                .build();
 
 
     }
 
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity http, PasswordEncoder passwordEncoder, UserDetailServiceImpl userDetailsService) throws Exception {
+        return http.getSharedObject(AuthenticationManagerBuilder.class)
+                .userDetailsService(userDetailsService)
+                .passwordEncoder(passwordEncoder)
+                .and()
+                .build();
     }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {
