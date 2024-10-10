@@ -19,7 +19,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 @Configuration
 public class SecurityConfig {
 
-
+    @Autowired
     private final UserDetailServiceImpl userDetailsService;
 
     @Autowired
@@ -34,7 +34,7 @@ public class SecurityConfig {
 
         //Object AbstractHttpConfigurer;
         return http.authorizeHttpRequests(request -> request
-                        .requestMatchers("/**","/user/**").permitAll().anyRequest().permitAll())
+                        .requestMatchers("/user/**").permitAll().requestMatchers("/blog").hasRole("USER").anyRequest().permitAll())
                 .httpBasic(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .build();
