@@ -2,6 +2,7 @@ package com.gblog.blog.controllers;
 
 import com.gblog.blog.entity.User;
 import com.gblog.blog.services.UserService;
+import com.gblog.blog.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     @Autowired
     UserService userService;
+
+    @Autowired
+    JwtUtil jwtutil;
 
     @Autowired
     AuthenticationManager  authenticationManager;
@@ -36,7 +40,8 @@ public class UserController {
     ResponseEntity<String> login(@RequestBody User user) {
         try{
             var v= authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(),user.getPassword()));
-           return new ResponseEntity<>(v.getName(),HttpStatus.OK);
+            String jwt=jwtutil.generateToken(v.getName());
+           return new ResponseEntity<>(jwt,HttpStatus.OK);
         }catch(Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }

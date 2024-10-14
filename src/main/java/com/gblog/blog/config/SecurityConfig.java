@@ -1,5 +1,6 @@
 package com.gblog.blog.config;
 
+import com.gblog.blog.filter.JwtFilter;
 import com.gblog.blog.services.UserDetailServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @EnableWebSecurity
 @Configuration
@@ -21,6 +23,9 @@ public class SecurityConfig {
 
     @Autowired
     private final UserDetailServiceImpl userDetailsService;
+
+    @Autowired
+    private JwtFilter jwtFilter;
 
     @Autowired
     @Lazy
@@ -35,8 +40,8 @@ public class SecurityConfig {
         //Object AbstractHttpConfigurer;
         return http.authorizeHttpRequests(request -> request
                         .requestMatchers("/user/**").permitAll().requestMatchers("/blog").hasRole("USER").anyRequest().permitAll())
-                .httpBasic(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class).httpBasic(Customizer.withDefaults())
                 .build();
 
 
