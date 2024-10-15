@@ -1,6 +1,7 @@
 package com.gblog.blog.controllers;
 
 import com.gblog.blog.entity.User;
+import com.gblog.blog.services.EmailService;
 import com.gblog.blog.services.UserService;
 import com.gblog.blog.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,11 +24,19 @@ public class UserController {
     JwtUtil jwtutil;
 
     @Autowired
+    EmailService emailService;
+
+
+
+    @Autowired
     AuthenticationManager  authenticationManager;
     @PostMapping("/signup")
     ResponseEntity<String> createUser(@RequestBody User user) {
         try {
             userService.createUser(user);
+            if(user.getEmail()!=null) {
+                emailService.sendEmail(user.getEmail(),"Welcome","Thank you for signing up");
+            }
             return new ResponseEntity<>("Successfully created", HttpStatus.CREATED);
 
         } catch (Exception e) {

@@ -39,7 +39,7 @@ public class SecurityConfig {
 
         //Object AbstractHttpConfigurer;
         return http.authorizeHttpRequests(request -> request
-                        .requestMatchers("/user/**").permitAll().requestMatchers("/blog").hasRole("USER").anyRequest().permitAll())
+                        .requestMatchers("/user/**","/api/ai/**").permitAll().requestMatchers("/blog").hasRole("USER").anyRequest().permitAll())
                 .csrf(AbstractHttpConfigurer::disable)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class).httpBasic(Customizer.withDefaults())
                 .build();
